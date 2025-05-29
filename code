@@ -1,0 +1,44 @@
+!pip install pandas scikit-learn matplotlib
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
+import matplotlib.pyplot as plt
+import seaborn as sns
+# Sample synthetic data for credit scoring
+data = {
+    'age': [25, 45, 35, 50, 23, 43, 36, 52, 40, 60],
+    'income': [50000, 64000, 58000, 72000, 48000, 65000, 59000, 80000, 62000, 90000],
+    'loan_amount': [20000, 10000, 15000, 30000, 12000, 18000, 16000, 28000, 17000, 25000],
+    'credit_history': [1, 0, 1, 1, 0, 1, 1, 0, 1, 1],  # 1=good, 0=bad history
+    'creditworthy': [1, 0, 1, 1, 0, 1, 1, 0, 1, 1]   # 1=creditworthy, 0=not
+}
+
+df = pd.DataFrame(data)
+# Features and Target
+X = df.drop('creditworthy', axis=1)
+y = df['creditworthy']
+
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Feature scaling (optional but recommended)
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X_train_scaled, y_train)
+y_pred = model.predict(X_test_scaled)
+
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print("\nClassification Report:\n", classification_report(y_test, y_pred))
+
+# Confusion Matrix
+cm = confusion_matrix(y_test, y_pred)
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.show()
+import joblib
+joblib.dump(model, 'credit_scoring_model.pkl')
